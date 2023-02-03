@@ -18,6 +18,25 @@ namespace SessionAccounting.Controllers
         {
             _context = context;
         }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudentsWithExams()
+        {
+            return await _context.Students.Include(f => f.StudentAttendances).ThenInclude(s=>s.Exam).ToListAsync();
+        }
+
+        [HttpGet("{Id:guid}")]
+        public async Task<ActionResult<Student>> GetGroupWithStudents(Guid id)
+        {
+            var student = await _context.Students.Where(f => f.Id == id).Include(s => s.StudentAttendances)
+                .ThenInclude(e => e.Exam).FirstOrDefaultAsync();
+
+            if (student is null) return NotFound();
+
+            return student;
+
+        }
+
         [HttpPost]
         public async Task AddStudent([FromBody] StudentModel model)
         {
